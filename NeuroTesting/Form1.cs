@@ -2,23 +2,30 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
+using Tensorflow.Keras;
 
 namespace NeuroTesting
 {
     public partial class Form1 : Form
     {
-        private float a = 1.01f;
-        private bool isPlayerHooking = true;
-
+        private readonly float a = 1.01f;
         private List<Player> players = new List<Player>();
 
         public Form1()
         {
             InitializeComponent();
+            initPlayers(30);
+        }
+
+        private void initPlayers(int numberOfPlayers)
+        {
             var rand = new Random();
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < numberOfPlayers; i++)
             {
-                players.Add(new Player(this, rand, 10 + (i * 50)));
+                for (int j = 0; j < 20 && j < numberOfPlayers; j++, i++)
+                {
+                    players.Add(new Player(this, rand, 10 + (j * 50)));
+                }
             }
         }
 
@@ -26,13 +33,15 @@ namespace NeuroTesting
         {
             for (int i = 0; i < players.Count; i++)
             {
+                var rand = new Random();
+                players[i].isHooking = rand.Next(100) > 50;
                 doPlayerMove(players[i]);
             }
         }
 
         private void doPlayerMove(Player _player)
         {
-            if (isPlayerHooking)
+            if (_player.isHooking)
             {
                 _player.v += a;
             }
@@ -84,18 +93,25 @@ namespace NeuroTesting
 
         private void Form1_MouseDown(object sender, MouseEventArgs e)
         {
-            isPlayerHooking = false;
+            for (int i = 0; i < players.Count; i++)
+            {
+                players[i].isHooking = false;
+            }
         }
 
         private void Form1_MouseUp(object sender, MouseEventArgs e)
         {
-            isPlayerHooking = true;
+            for (int i = 0; i < players.Count; i++)
+            {
+                players[i].isHooking = true;
+            }
         }
     }
 
     class Player
     {
         public Panel pnlPlayer = new Panel();
+        public bool isHooking = false;
         public float v = 0;
 
         public Player(Form form, Random rand, int posX)
